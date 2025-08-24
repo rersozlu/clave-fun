@@ -1,103 +1,192 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
 
-export default function Home() {
+interface GameStepData {
+  rowSize: number;
+  explodingBoxIndex: number;
+  totalMultiplier: number;
+  isCompleted: boolean;
+  isExploded: boolean;
+}
+
+const Game: React.FC = () => {
+  const [gameState, setGameState] = useState<"playing" | "won" | "lost">("playing");
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [currentMultiplier, setCurrentMultiplier] = useState<number>(1);
+  const [gameData, setGameData] = useState<GameStepData[]>([]);
+
+  useEffect(() => {
+    setupGame();
+  }, []);
+
+  const setupGame = useCallback(() => {
+    const houseEdge: number = 0.1;
+    const tempGameData: GameStepData[] = [];
+    let previousMultiplier: number = 1;
+
+    let boxSizes: number[] = [];
+    for (let i = 3; i <= 7; i++) {
+      for (let j = 0; j < 5; j++) {
+        boxSizes.push(i);
+      }
+    }
+
+    boxSizes = shuffleArray(boxSizes);
+
+    for (let i = 0; i < 25; i++) {
+      const rowSize: number = boxSizes[i];
+      const explodingBoxIndex: number = Math.floor(Math.random() * rowSize);
+      const winProbability: number = (rowSize - 1) / rowSize;
+      const fairMultiplier: number = 1 / winProbability;
+      const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
+      const totalMultiplier: number = previousMultiplier * stepMultiplier;
+
+      tempGameData.push({
+        rowSize,
+        explodingBoxIndex,
+        totalMultiplier: parseFloat(totalMultiplier.toFixed(2)),
+        isCompleted: false,
+        isExploded: false,
+      });
+
+      previousMultiplier = totalMultiplier;
+    }
+
+    setGameData(tempGameData);
+    setGameState("playing");
+    setCurrentStep(0);
+    setCurrentMultiplier(1);
+  }, [setGameData, setGameState, setCurrentStep, setCurrentMultiplier]);
+
+  const shuffleArray = (array: number[]): number[] => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const handleBoxClick = (boxIndex: number): void => {
+    if (gameState !== "playing" || currentStep >= gameData.length) return;
+
+    const currentStepData = gameData[currentStep];
+
+    if (boxIndex === currentStepData.explodingBoxIndex) {
+      const updatedGameData = [...gameData];
+      updatedGameData[currentStep].isExploded = true;
+      setGameData(updatedGameData);
+      setGameState("lost");
+      setCurrentMultiplier(0);
+    } else {
+      const updatedGameData = [...gameData];
+      updatedGameData[currentStep].isCompleted = true;
+      setGameData(updatedGameData);
+
+      const nextStep = currentStep + 1;
+      const nextMultiplier = currentStepData.totalMultiplier;
+      setCurrentMultiplier(nextMultiplier);
+
+      if (nextStep < gameData.length) {
+        setTimeout(() => {
+          setCurrentStep(nextStep);
+        }, 300);
+      } else {
+        setGameState("won");
+      }
+    }
+  };
+
+  const handleCashOut = (): void => {
+    if (gameState !== "playing") return;
+    setGameState("won");
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="bg-gray-800 text-gray-200 font-sans text-center p-8 rounded-xl max-w-3xl mx-auto my-10">
+      <h1 className="text-3xl font-bold mb-6">Clave Fun</h1>
+      <div className="flex justify-between items-center mb-6 p-4 bg-gray-700 rounded-lg">
+        <p className="text-xl">
+          Multiplier:
+          <span className="font-bold text-green-400">{currentMultiplier.toFixed(2)}x</span>
+        </p>
+        <p className="text-xl">
+          Step: <span className="font-bold">{currentStep + 1} / 25</span>
+        </p>
+        <p className="px-6 py-2 text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md transition-colors">
+          {currentStep === 0 ? "Earnings" : `Earned (${currentMultiplier.toFixed(2)}x)`}
+        </p>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <button
+        onClick={handleCashOut}
+        className="px-6 py-2 cursor-pointer text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:outline-none disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors"
+        disabled={currentStep === 0 || gameState !== "playing"}
+      >
+        {currentStep === 0 ? "Cash Out" : `Cash Out (${currentMultiplier.toFixed(2)}x)`}
+      </button>
+
+      <button
+        onClick={setupGame}
+        className="px-6 py-2 cursor-pointer text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors mb-6 ml-4"
+      >
+        Restart
+      </button>
+
+      <div className="space-y-4">
+        {gameData.map((stepData, stepIndex) => (
+          <div
+            key={stepIndex}
+            className={`
+              p-4 rounded-lg flex items-center gap-4 transition-all duration-300
+              ${
+                stepIndex === currentStep && gameState === "playing"
+                  ? "bg-gray-700 shadow-lg scale-105"
+                  : "bg-gray-900"
+              }
+              ${stepData.isCompleted ? "opacity-50" : ""}
+              ${stepData.isExploded ? "border-2 border-red-500" : ""}
+            `}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <span className="font-bold text-lg w-20 text-left">
+              {stepData.totalMultiplier.toFixed(2)}x
+            </span>
+            <div className="flex-1 flex justify-center gap-2">
+              {Array.from({ length: stepData.rowSize }, (_, boxIndex) => (
+                <div
+                  key={boxIndex}
+                  onClick={() => stepIndex === currentStep && handleBoxClick(boxIndex)}
+                  className={`
+                    w-10 h-10 flex items-center justify-center rounded-md text-xl font-bold
+                    ${
+                      stepIndex === currentStep && gameState === "playing"
+                        ? "bg-gray-600 cursor-pointer hover:bg-gray-500"
+                        : "bg-gray-600/30 cursor-not-allowed"
+                    }
+                    ${
+                      stepData.isExploded && boxIndex === stepData.explodingBoxIndex
+                        ? "bg-red-500"
+                        : ""
+                    }
+                  `}
+                >
+                  {stepData.isExploded && boxIndex === stepData.explodingBoxIndex ? "💥" : "?"}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {gameState === "lost" && (
+        <h2 className="text-2xl font-bold text-red-500 my-4">Kaybettin! Çarpan sıfırlandı.</h2>
+      )}
+      {gameState === "won" && (
+        <h2 className="text-2xl font-bold text-green-500 my-4">
+          Kazandın! Toplam çarpan: {currentMultiplier.toFixed(2)}x
+        </h2>
+      )}
     </div>
   );
-}
+};
+
+export default Game;
