@@ -7,6 +7,7 @@ interface GameStepData {
   totalMultiplier: number;
   isCompleted: boolean;
   isExploded: boolean;
+  selectedBoxIndex: number | null;
 }
 
 const Game: React.FC = () => {
@@ -20,16 +21,16 @@ const Game: React.FC = () => {
   }, []);
 
   const setupGame = useCallback(() => {
-    const houseEdge: number = 0.1;
     const tempGameData: GameStepData[] = [];
     let previousMultiplier: number = 1;
 
     let boxSizes: number[] = [];
-    for (let i = 3; i <= 7; i++) {
-      for (let j = 0; j < 5; j++) {
-        boxSizes.push(i);
-      }
-    }
+    // Yeni kutu dağılımı
+    for (let i = 0; i < 7; i++) boxSizes.push(3);
+    for (let i = 0; i < 6; i++) boxSizes.push(4);
+    for (let i = 0; i < 5; i++) boxSizes.push(5);
+    for (let i = 0; i < 4; i++) boxSizes.push(6);
+    for (let i = 0; i < 3; i++) boxSizes.push(7);
 
     boxSizes = shuffleArray(boxSizes);
 
@@ -38,6 +39,18 @@ const Game: React.FC = () => {
       const explodingBoxIndex: number = Math.floor(Math.random() * rowSize);
       const winProbability: number = (rowSize - 1) / rowSize;
       const fairMultiplier: number = 1 / winProbability;
+
+      let houseEdge: number = 0;
+
+      // Kutu sayısına göre kasa avantajı ayarı
+      if (rowSize >= 5 && rowSize <= 7) {
+        houseEdge = 0.1;
+      } else if (rowSize === 4) {
+        houseEdge = 0.05;
+      } else if (rowSize === 3) {
+        houseEdge = 0;
+      }
+
       const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
       const totalMultiplier: number = previousMultiplier * stepMultiplier;
 
@@ -47,6 +60,7 @@ const Game: React.FC = () => {
         totalMultiplier: parseFloat(totalMultiplier.toFixed(2)),
         isCompleted: false,
         isExploded: false,
+        selectedBoxIndex: null,
       });
 
       previousMultiplier = totalMultiplier;
@@ -69,17 +83,17 @@ const Game: React.FC = () => {
   const handleBoxClick = (boxIndex: number): void => {
     if (gameState !== "playing" || currentStep >= gameData.length) return;
 
-    const currentStepData = gameData[currentStep];
+    const updatedGameData = [...gameData];
+    const currentStepData = updatedGameData[currentStep];
+    currentStepData.selectedBoxIndex = boxIndex;
 
     if (boxIndex === currentStepData.explodingBoxIndex) {
-      const updatedGameData = [...gameData];
-      updatedGameData[currentStep].isExploded = true;
+      currentStepData.isExploded = true;
       setGameData(updatedGameData);
       setGameState("lost");
       setCurrentMultiplier(0);
     } else {
-      const updatedGameData = [...gameData];
-      updatedGameData[currentStep].isCompleted = true;
+      currentStepData.isCompleted = true;
       setGameData(updatedGameData);
 
       const nextStep = currentStep + 1;
@@ -170,7 +184,11 @@ const Game: React.FC = () => {
                     }
                   `}
                 >
-                  {stepData.isExploded && boxIndex === stepData.explodingBoxIndex ? "💥" : "?"}
+                  {stepData.isExploded && boxIndex === stepData.explodingBoxIndex
+                    ? "💥"
+                    : stepData.isCompleted && boxIndex === stepData.selectedBoxIndex
+                    ? "✅"
+                    : "?"}
                 </div>
               ))}
             </div>
