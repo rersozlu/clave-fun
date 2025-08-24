@@ -178,11 +178,11 @@ const Game: React.FC = () => {
       </div>
 
       {gameState === "lost" && (
-        <h2 className="text-2xl font-bold text-red-500 my-4">Kaybettin! Çarpan sıfırlandı.</h2>
+        <h2 className="text-2xl font-bold text-red-500 my-4">Lost! Multiplier reset.</h2>
       )}
       {gameState === "won" && (
         <h2 className="text-2xl font-bold text-green-500 my-4">
-          Kazandın! Toplam çarpan: {currentMultiplier.toFixed(2)}x
+          Won! Total multiplier: {currentMultiplier.toFixed(2)}x
         </h2>
       )}
     </div>
