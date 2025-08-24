@@ -47,27 +47,25 @@ const Game: React.FC = () => {
         houseEdge = 0;
       } else {
         if (rowSize === 2) {
-          houseEdge = 0.05; // Çarpan: 2 * (1 - 0.05) = 1.9x
+          houseEdge = 0.05;
         } else if (rowSize === 3) {
-          houseEdge = 0.1; // Çarpan: 1.5 * (1 - 0.1) = 1.35x
+          houseEdge = 0.1;
         } else if (rowSize === 4) {
-          houseEdge = 0.15; // Çarpan: 1.33 * (1 - 0.15) = 1.13x
+          houseEdge = 0.15;
         } else if (rowSize === 5) {
-          houseEdge = 0.18; // Çarpan: 1.25 * (1 - 0.18) = 1.025x
+          houseEdge = 0.18;
         } else if (rowSize === 6) {
-          houseEdge = 0.18; // Çarpan: 1.2 * (1 - 0.18) = 0.984x. Düşüşü engellemek için...
+          houseEdge = 0.18;
         } else {
-          // 7 Kutulu
-          houseEdge = 0.18; // Çarpan: 1.16 * (1 - 0.18) = 0.951x. Düşüşü engellemek için...
+          houseEdge = 0.18;
         }
       }
 
-      // 1'in altına düşmesini engellemek için houseEdge değerlerini yeniden ayarlayalım
       if (rowSize === 6) {
-        houseEdge = 0.15; // 1.2 * (1-0.15) = 1.02x
+        houseEdge = 0.15;
       }
       if (rowSize === 7) {
-        houseEdge = 0.12; // 1.14 * (1-0.12) = 1.0032x
+        houseEdge = 0.12;
       }
 
       const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
@@ -196,7 +194,9 @@ const Game: React.FC = () => {
         />
         <button
           onClick={handleAction}
-          disabled={currentStep > 0 && gameState === "playing"}
+          disabled={
+            (currentStep > 0 && gameState === "playing") || betAmount === null || betAmount <= 0
+          }
           className="disabled:bg-gray-500 disabled:cursor-not-allowed w-full sm:w-auto px-4 py-2 text-sm sm:text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors"
         >
           {actionButtonText()}
