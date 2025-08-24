@@ -102,42 +102,43 @@ const Game: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 text-gray-200 font-sans text-center p-8 rounded-xl max-w-3xl mx-auto my-10">
-      <h1 className="text-3xl font-bold mb-6">Clave Fun</h1>
-      <div className="flex justify-between items-center mb-6 p-4 bg-gray-700 rounded-lg">
-        <p className="text-xl">
+    <div className="bg-gray-800 text-gray-200 font-sans text-center p-4 sm:p-8 rounded-xl max-w-full sm:max-w-3xl mx-auto my-4 sm:my-10">
+      <h1 className="text-xl sm:text-3xl font-bold mb-4 sm:mb-6">Clave Fun</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center sm:mb-6 p-3 sm:p-4 bg-gray-700 rounded-lg">
+        <p className="text-base sm:text-xl">
           Multiplier:
           <span className="font-bold text-green-400">{currentMultiplier.toFixed(2)}x</span>
         </p>
-        <p className="text-xl">
+        <p className="text-base sm:text-xl mt-2 sm:mt-0">
           Step: <span className="font-bold">{currentStep + 1} / 25</span>
         </p>
-        <p className="px-6 py-2 text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md transition-colors">
+        <p className="px-4 py-1 sm:px-6 sm:py-2 text-base sm:text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md transition-colors mt-2 sm:mt-0">
           {currentStep === 0 ? "Earnings" : `Earned (${currentMultiplier.toFixed(2)}x)`}
         </p>
       </div>
 
-      <button
-        onClick={handleCashOut}
-        className="px-6 py-2 cursor-pointer text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:outline-none disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors"
-        disabled={currentStep === 0 || gameState !== "playing"}
-      >
-        {currentStep === 0 ? "Cash Out" : `Cash Out (${currentMultiplier.toFixed(2)}x)`}
-      </button>
+      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+        <button
+          onClick={handleCashOut}
+          className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2 text-sm sm:text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:outline-none disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors"
+          disabled={currentStep === 0 || gameState !== "playing"}
+        >
+          {currentStep === 0 ? "Cash Out" : `Cash Out (${currentMultiplier.toFixed(2)}x)`}
+        </button>
+        <button
+          onClick={setupGame}
+          className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2 text-sm sm:text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors"
+        >
+          Restart
+        </button>
+      </div>
 
-      <button
-        onClick={setupGame}
-        className="px-6 py-2 cursor-pointer text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors mb-6 ml-4"
-      >
-        Restart
-      </button>
-
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-4">
         {gameData.map((stepData, stepIndex) => (
           <div
             key={stepIndex}
             className={`
-              p-4 rounded-lg flex items-center gap-4 transition-all duration-300
+              p-3 sm:p-4 rounded-lg flex flex-wrap items-center justify-center sm:flex-nowrap sm:justify-start gap-2 sm:gap-4 transition-all duration-300
               ${
                 stepIndex === currentStep && gameState === "playing"
                   ? "bg-gray-700 shadow-lg scale-105"
@@ -147,16 +148,16 @@ const Game: React.FC = () => {
               ${stepData.isExploded ? "border-2 border-red-500" : ""}
             `}
           >
-            <span className="font-bold text-lg w-20 text-left">
+            <span className="font-bold text-base sm:text-lg w-full sm:w-20 text-center sm:text-left mb-2 sm:mb-0">
               {stepData.totalMultiplier.toFixed(2)}x
             </span>
-            <div className="flex-1 flex justify-center gap-2">
+            <div className="flex-1 flex flex-wrap justify-center gap-2">
               {Array.from({ length: stepData.rowSize }, (_, boxIndex) => (
                 <div
                   key={boxIndex}
                   onClick={() => stepIndex === currentStep && handleBoxClick(boxIndex)}
                   className={`
-                    w-10 h-10 flex items-center justify-center rounded-md text-xl font-bold
+                    w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-md text-base sm:text-xl font-bold
                     ${
                       stepIndex === currentStep && gameState === "playing"
                         ? "bg-gray-600 cursor-pointer hover:bg-gray-500"
@@ -178,10 +179,10 @@ const Game: React.FC = () => {
       </div>
 
       {gameState === "lost" && (
-        <h2 className="text-2xl font-bold text-red-500 my-4">Lost! Multiplier reset.</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-red-500 my-4">Lost! Multiplier reset.</h2>
       )}
       {gameState === "won" && (
-        <h2 className="text-2xl font-bold text-green-500 my-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-green-500 my-4">
           Won! Total multiplier: {currentMultiplier.toFixed(2)}x
         </h2>
       )}
