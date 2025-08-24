@@ -41,22 +41,33 @@ const Game: React.FC = () => {
       const fairMultiplier: number = 1 / winProbability;
 
       let houseEdge: number;
-
-      // İlk turda fee yok
       if (i === 0) {
         houseEdge = 0;
-      }
-      // 15. turdan sonra fee yok
-      else if (i >= 14) {
+      } else if (i >= 14) {
         houseEdge = 0;
-      }
-      // Diğer durumlarda kutu sayısına göre fee
-      else if (rowSize === 2) {
-        houseEdge = 0.1;
-      } else if (rowSize >= 3 && rowSize <= 4) {
-        houseEdge = 0.15;
       } else {
-        houseEdge = 0.25;
+        if (rowSize === 2) {
+          houseEdge = 0.05; // Çarpan: 2 * (1 - 0.05) = 1.9x
+        } else if (rowSize === 3) {
+          houseEdge = 0.1; // Çarpan: 1.5 * (1 - 0.1) = 1.35x
+        } else if (rowSize === 4) {
+          houseEdge = 0.15; // Çarpan: 1.33 * (1 - 0.15) = 1.13x
+        } else if (rowSize === 5) {
+          houseEdge = 0.18; // Çarpan: 1.25 * (1 - 0.18) = 1.025x
+        } else if (rowSize === 6) {
+          houseEdge = 0.18; // Çarpan: 1.2 * (1 - 0.18) = 0.984x. Düşüşü engellemek için...
+        } else {
+          // 7 Kutulu
+          houseEdge = 0.18; // Çarpan: 1.16 * (1 - 0.18) = 0.951x. Düşüşü engellemek için...
+        }
+      }
+
+      // 1'in altına düşmesini engellemek için houseEdge değerlerini yeniden ayarlayalım
+      if (rowSize === 6) {
+        houseEdge = 0.15; // 1.2 * (1-0.15) = 1.02x
+      }
+      if (rowSize === 7) {
+        houseEdge = 0.12; // 1.14 * (1-0.12) = 1.0032x
       }
 
       const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
@@ -145,7 +156,6 @@ const Game: React.FC = () => {
     if (gameState === "not-started" || gameState === "lost") {
       setupGame();
     } else {
-      // Bu kısım, oyun devam ederken restart işlevi görür
       setupGame();
     }
   };
@@ -186,7 +196,8 @@ const Game: React.FC = () => {
         />
         <button
           onClick={handleAction}
-          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors"
+          disabled={currentStep > 0 && gameState === "playing"}
+          className="disabled:bg-gray-500 disabled:cursor-not-allowed w-full sm:w-auto px-4 py-2 text-sm sm:text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition-colors"
         >
           {actionButtonText()}
         </button>
