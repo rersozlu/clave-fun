@@ -42,11 +42,11 @@ const Game: React.FC = () => {
 
       let houseEdge: number;
       if (rowSize === 2) {
-        houseEdge = 0;
-      } else if (rowSize >= 3 && rowSize <= 4) {
-        houseEdge = 0.05;
-      } else {
         houseEdge = 0.1;
+      } else if (rowSize >= 3 && rowSize <= 4) {
+        houseEdge = 0.15;
+      } else {
+        houseEdge = 0.25;
       }
 
       const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
