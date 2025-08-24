@@ -26,11 +26,11 @@ const Game: React.FC = () => {
 
     let boxSizes: number[] = [];
     // Yeni kutu dağılımı
-    for (let i = 0; i < 7; i++) boxSizes.push(3);
-    for (let i = 0; i < 6; i++) boxSizes.push(4);
+    for (let i = 0; i < 6; i++) boxSizes.push(3);
+    for (let i = 0; i < 5; i++) boxSizes.push(4);
     for (let i = 0; i < 5; i++) boxSizes.push(5);
-    for (let i = 0; i < 4; i++) boxSizes.push(6);
-    for (let i = 0; i < 3; i++) boxSizes.push(7);
+    for (let i = 0; i < 5; i++) boxSizes.push(6);
+    for (let i = 0; i < 4; i++) boxSizes.push(7);
 
     boxSizes = shuffleArray(boxSizes);
 
@@ -43,12 +43,10 @@ const Game: React.FC = () => {
       let houseEdge: number = 0;
 
       // Kutu sayısına göre kasa avantajı ayarı
-      if (rowSize >= 5 && rowSize <= 7) {
+      if (rowSize >= 4 && rowSize <= 7) {
         houseEdge = 0.1;
-      } else if (rowSize === 4) {
-        houseEdge = 0.05;
       } else if (rowSize === 3) {
-        houseEdge = 0;
+        houseEdge = 0.05;
       }
 
       const stepMultiplier: number = fairMultiplier * (1 - houseEdge);
